@@ -147,6 +147,27 @@ rm ~/.claude/kurallar.md
 Sonra kabuk profilinden (`~/.bashrc` · `~/.zshrc` · `~/.config/fish/config.fish`)
 `# claude-kurallar` yorumunu ve altındaki `alias ck=` satırını sil.
 
+## Güvenlik
+
+`kur.sh` ne yapıyor, tamamı bu:
+
+- `~/.claude/kurallar.md` dosyasını yazar (varsa önce zaman damgalı yedeğini alır),
+- kabuk profiline `# claude-kurallar` yorumu ve tek bir `alias ck=` satırı ekler,
+- opsiyonel olarak kural metnindeki "Kullanıcı" ifadesini verdiğin isimle değiştirir.
+
+Yapmadıkları: `sudo` çağırmaz, paket kurmaz, mevcut Claude Code ayarlarını değiştirmez,
+hiçbir yere veri göndermez. Depo dışına tek bir ağ isteği bile atmaz.
+
+İki nokta bilerek sıkılaştırıldı:
+
+- Kural dosyası **yalnızca** script gerçekten diskten çalışıyorsa yanındaki kopyadan alınır.
+  `curl | bash` ile çalışırken depodan indirilir — yoksa o an bulunduğun klasördeki bir
+  `kurallar.md` sessizce kurulabilirdi.
+- İsim girdisi yalnızca harf ve boşluk kabul eder; aksi halde girdi metin değiştirme
+  komutuna sızıp kural dosyasını bozabilirdi.
+
+Yine de: internetten gelen hiçbir script'i okumadan çalıştırma. Bu da dahil.
+
 ## Lisans
 
 MIT — bkz. [LICENSE](LICENSE).

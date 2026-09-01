@@ -25,30 +25,79 @@ if [ -f "$HEDEF" ]; then
   uyari "$HEDEF zaten vardı, yedeği alındı: $YEDEK"
 fi
 
-if [ -f "$(dirname "$0")/kurallar.md" ]; then
-  cp "$(dirname "$0")/kurallar.md" "$HEDEF"
-  basarili "kurallar.md kopyalandı → $HEDEF"
+# Yerel kopyayi YALNIZCA script gercekten diskten calisiyorsa kullan.
+# `curl | bash` ile calisirken $0 "bash" olur, dirname "." doner ve o an
+# bulundugun klasordeki bir kurallar.md sessizce kurulurdu. Bilerek kapatildi.
+YEREL=""
+KAYNAK="${BASH_SOURCE[0]:-}"
+if [ -n "$KAYNAK" ] && [ -f "$KAYNAK" ] && [ -f "$(dirname "$KAYNAK")/kurallar.md" ]; then
+  YEREL="$(dirname "$KAYNAK")/kurallar.md"
+fi
+
+INDIR="$(mktemp)"
+trap 'rm -f "$INDIR"' EXIT
+
+if [ -n "$YEREL" ]; then
+  cp "$YEREL" "$INDIR"
+  bilgi "yerel kopya kullanıldı: $YEREL"
 else
   if command -v curl >/dev/null 2>&1; then
-    curl -fsSL "$REPO_RAW/kurallar.md" -o "$HEDEF"
+    curl -fsSL "$REPO_RAW/kurallar.md" -o "$INDIR"
   elif command -v wget >/dev/null 2>&1; then
-    wget -qO "$HEDEF" "$REPO_RAW/kurallar.md"
+    wget -qO "$INDIR" "$REPO_RAW/kurallar.md"
   else
     renk "31" "  ✗ curl da wget da yok. kurallar.md'yi elle indir."
     exit 1
   fi
-  basarili "kurallar.md indirildi → $HEDEF"
+  bilgi "kurallar.md depodan indirildi"
 fi
+
+# indirilen dosya gercekten kural dosyasi mi
+if [ ! -s "$INDIR" ] || ! grep -q "rapor sunma" "$INDIR"; then
+  renk "31" "  ✗ İndirilen dosya beklenen kural dosyası değil. Kurulum durduruldu."
+  exit 1
+fi
+
+cp "$INDIR" "$HEDEF"
+basarili "kurallar.md yerine kondu → $HEDEF"
 
 # ── 2) İsim kişiselleştirme (opsiyonel) ───────────────────────────────────────
 if [ -t 0 ]; then
   printf '  Kurallarda sana nasıl hitap edilsin? (boş bırak = "Kullanıcı"): '
   read -r ISIM || ISIM=""
   if [ -n "${ISIM:-}" ]; then
-    # BSD ve GNU sed farkını atlamak için geçici dosya üzerinden
-    sed "s/Kullanıcıya/${ISIM}'a/g; s/Kullanıcının/${ISIM}'un/g; s/Kullanıcı/${ISIM}/g" \
-      "$HEDEF" > "$HEDEF.tmp" && mv "$HEDEF.tmp" "$HEDEF"
-    basarili "kurallar \"$ISIM\" adına uyarlandı"
+    # Sadece harf ve bosluk kabul et. Aksi halde girdi sed betigine kod olarak
+    # sizabilir (ornegin "a/g; w /tmp/x") ve kural dosyasini bozabilirdi.
+    if printf '%s' "$ISIM" | LC_ALL=C.UTF-8 grep -qE '^[[:alpha:]][[:alpha:] ]{0,30}$'; then
+      ISIM_E="$(printf '%s' "$ISIM" | sed 's/[\\&/]/\\&/g')"
+      # Turkce unlu uyumu. Not: tr/tail -c gibi BAYT tabanli araclar cok baytli
+      # harflerde (ç ğ ı ö ş ü) yanlis sonuc veriyor; bash substring karakter tabanli.
+      SONV=""
+      for ((i=${#ISIM}-1; i>=0; i--)); do
+        case "${ISIM:i:1}" in
+          a|A) SONV=a; break ;; e|E) SONV=e; break ;;
+          ı|I) SONV=ı; break ;; i|İ) SONV=i; break ;;
+          o|O) SONV=o; break ;; ö|Ö) SONV=ö; break ;;
+          u|U) SONV=u; break ;; ü|Ü) SONV=ü; break ;;
+        esac
+      done
+      case "$SONV" in
+        a|ı) EK_A="a"; EK_IN="ın" ;;
+        e|i) EK_A="e"; EK_IN="in" ;;
+        o|u) EK_A="a"; EK_IN="un" ;;
+        ö|ü) EK_A="e"; EK_IN="ün" ;;
+        *)   EK_A="a"; EK_IN="ın" ;;
+      esac
+      # Unluyle biten isimde kaynastirma harfi: Gökçe'ye / Gökçe'nin
+      case "${ISIM: -1}" in
+        a|e|ı|i|o|ö|u|ü|A|E|I|İ|O|Ö|U|Ü) EK_A="y$EK_A"; EK_IN="n$EK_IN" ;;
+      esac
+      sed "s/Kullanıcıya/${ISIM_E}'${EK_A}/g; s/Kullanıcının/${ISIM_E}'${EK_IN}/g; s/Kullanıcı/${ISIM_E}/g" \
+        "$HEDEF" > "$HEDEF.tmp" && mv "$HEDEF.tmp" "$HEDEF"
+      basarili "kurallar \"$ISIM\" adına uyarlandı"
+    else
+      uyari "isim yalnızca harf ve boşluk içerebilir — atlandı, \"Kullanıcı\" kaldı"
+    fi
   fi
 fi
 
