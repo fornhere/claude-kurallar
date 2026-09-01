@@ -7,6 +7,11 @@
 # curl ile  :  curl -fsSL .../kur.sh | bash -s -- en
 set -euo pipefail
 
+# Her sey bir fonksiyonun icinde; son satirda cagriliyor. Boylece indirme
+# yarida kesilirse bash yarim script'i calistirmaz - fonksiyon hic tanimlanmamis
+# olur ve hicbir sey olmaz.
+main() {
+
 REPO_RAW="https://raw.githubusercontent.com/fornhere/claude-kurallar/main"
 
 renk() { printf '\033[%sm%s\033[0m\n' "$1" "$2"; }
@@ -178,3 +183,6 @@ echo
 bilgi "Düzenlemek / edit:  \$EDITOR $HEDEF"
 bilgi "Kaldırmak / remove: $RC içindeki 'claude-kurallar' satırlarını ve $HEDEF dosyasını sil."
 echo
+}
+
+main "$@"

@@ -16,13 +16,13 @@ dosyaya tek harf müdahale edilmedi. Videodaki oturumun çıktısı bu.
 ## Kurulum — tek komut
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/main/kur.sh | bash
+curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/v1/kur.sh | bash
 ```
 
 Kurulum başında dil sorar: **[1] Türkçe · [2] English**. Doğrudan seçmek istersen:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/main/kur.sh | bash -s -- en
+curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/v1/kur.sh | bash -s -- en
 ```
 
 Türkçe kurulumda dosya `~/.claude/kurallar.md`, İngilizcede `~/.claude/claude-rules.md`
@@ -32,7 +32,7 @@ Script ne yapıyor, önce okumak istersen (tavsiye edilir — internetten gelen 
 körlemesine çalıştırma):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/main/kur.sh | less
+curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/v1/kur.sh | less
 ```
 
 Klonlayarak kurmak istersen:
@@ -179,6 +179,28 @@ hiçbir yere veri göndermez. Depo dışına tek bir ağ isteği bile atmaz.
 - İsim girdisi yalnızca harf ve boşluk kabul eder; aksi halde girdi metin değiştirme
   komutuna sızıp kural dosyasını bozabilirdi.
 
+### Sürüme sabitlenmiş kurulum
+
+Kurulum komutundaki `v1`, `main` dalı değil sabit bir sürüm etiketi. Depoda sonradan ne
+değişirse değişsin o komut hep aynı kodu indirir.
+
+`kur.sh` tamamı bir fonksiyonun içinde ve son satırda çağrılıyor. İndirme yarıda kesilirse
+`bash` yarım script'i çalıştırmaz — fonksiyon hiç tanımlanmamış olur.
+
+### Doğrulayarak kurmak
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/v1/kur.sh -o kur.sh
+echo "3b41474f6f9496053e2748bf7c562c0bf35e470a0d4429c51c23fbe844d86d4e  kur.sh" | sha256sum -c -
+bash kur.sh
+```
+
+`v1` sürümünün SHA-256'sı:
+
+```
+3b41474f6f9496053e2748bf7c562c0bf35e470a0d4429c51c23fbe844d86d4e
+```
+
 Yine de: internetten gelen hiçbir script'i okumadan çalıştırma. Bu da dahil.
 
 ## English
@@ -187,7 +209,7 @@ Same thing in English: `rules.md` is the translated rule set, installed to
 `~/.claude/claude-rules.md`.
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/main/kur.sh | bash -s -- en
+curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/v1/kur.sh | bash -s -- en
 ```
 
 Then open Claude Code with `ck`, which is short for
