@@ -19,6 +19,15 @@ dosyaya tek harf müdahale edilmedi. Videodaki oturumun çıktısı bu.
 curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/main/kur.sh | bash
 ```
 
+Kurulum başında dil sorar: **[1] Türkçe · [2] English**. Doğrudan seçmek istersen:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/main/kur.sh | bash -s -- en
+```
+
+Türkçe kurulumda dosya `~/.claude/kurallar.md`, İngilizcede `~/.claude/claude-rules.md`
+olarak durur; `ck` kısayolu hangisini kurduysan ona bağlanır.
+
 Script ne yapıyor, önce okumak istersen (tavsiye edilir — internetten gelen hiçbir script'i
 körlemesine çalıştırma):
 
@@ -35,8 +44,9 @@ cd claude-kurallar && bash kur.sh
 
 Kurulum üç şey yapar, fazlasını değil:
 
-1. `kurallar.md`'yi `~/.claude/kurallar.md` içine kopyalar (üstüne yazmaz, yedeğini alır),
-2. kurallardaki "Kullanıcı" ifadesini istersen kendi adınla değiştirir,
+1. seçtiğin dildeki kural dosyasını `~/.claude/` içine kopyalar (üstüne yazmaz, yedeğini alır),
+2. kurallardaki "Kullanıcı" / "the user" ifadesini istersen kendi adınla değiştirir
+   (Türkçede ek uyumuyla: *Ahmet'e*, *Gökçe'ye*, *Batuhan'ın*),
 3. kabuk profiline `ck` diye bir kısayol ekler.
 
 Sonra:
@@ -80,6 +90,9 @@ Mesaj **yalnızca** o kelimeden ibaretse çalışır — cümle içinde geçerse
 | `SIK` | Son cevabı aynı bilgiyle sıkıştırır |
 | `ODAK` | Asıl meseleyi tek paragrafta söyler |
 | `18` | Konuyu 18 yaşındakine anlatır gibi anlatır |
+
+İngilizce dosyada bunların karşılığı `SHORT` · `FOCUS` · `18`, referans kodları da
+`R1` (risks) · `D1` (decisions) · `F1` (findings).
 
 ### Referans kodları
 
@@ -167,6 +180,38 @@ hiçbir yere veri göndermez. Depo dışına tek bir ağ isteği bile atmaz.
   komutuna sızıp kural dosyasını bozabilirdi.
 
 Yine de: internetten gelen hiçbir script'i okumadan çalıştırma. Bu da dahil.
+
+## English
+
+Same thing in English: `rules.md` is the translated rule set, installed to
+`~/.claude/claude-rules.md`.
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/fornhere/claude-kurallar/main/kur.sh | bash -s -- en
+```
+
+Then open Claude Code with `ck`, which is short for
+`claude --append-system-prompt-file ~/.claude/claude-rules.md`. It **appends** to Claude Code's
+own system prompt — tool use, safety and permissions all stay in place.
+
+The rules fix behaviour, not knowledge: no unasked-for tables or report headings, no bold slogan
+openers, no em dash chains, no "which one should I do" at the end; plain conversational
+paragraphs with the important part last; no silently widened scope; and no claiming a job is
+done without verifying it. Three shortcuts — `SHORT`, `FOCUS`, `18` — trigger only when the
+message is nothing but that word. Reference codes (`R1`, `D1`, `F1`) let you point at one item
+instead of describing it again.
+
+Don't use it as-is. Open a session, complain about what actually bothers you, and have Claude
+write the rule itself:
+
+```
+In this session I'm going to complain about how you write. For each complaint, add one short
+rule to ~/.claude/claude-rules.md. That file gets appended to your system prompt next session,
+so write the rules as instructions to yourself: second person, imperative, two sentences max.
+No headings, no intro, no decoration.
+```
+
+The rule file is read **at session start**, so restart Claude Code after editing it.
 
 ## Lisans
 
